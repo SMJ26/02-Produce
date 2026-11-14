@@ -1,0 +1,30 @@
+{
+  "name": "cutline-studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {"node": ">=22.18"},
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1",
+    "worker": "node --env-file-if-exists=.env src/worker.ts",
+    "db:init": "node --env-file-if-exists=.env scripts/migrate.ts",
+    "check": "tsc --noEmit",
+    "verify:media": "node --env-file-if-exists=.env scripts/verify-media.ts",
+    "verify:workflow": "node --env-file-if-exists=.env scripts/verify-workflow.ts"
+  },
+  "dependencies": {
+    "next": "16.4.6",
+    "pg": "^8.16.3",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.15.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^6.0.3"
+  }
+}
