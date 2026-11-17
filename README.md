@@ -2,7 +2,26 @@
 
 Cutline turns a topic into an English narrated explainer. Review and edit the draft, approve narration, then play or download the captioned 1920×1080 MP4 from Studio. The local demo uses sample writing, platform text-to-speech, and original illustrated stills.
 
-## Local setup
+## Run with Docker
+
+With Docker Desktop running, start the complete application:
+
+```sh
+docker compose up --build -d --wait
+```
+
+Open [Studio](http://127.0.0.1:3000) and choose **Demo · local fixtures**. Docker includes Node.js, FFmpeg, eSpeak NG, and caption fonts. Database initialization runs automatically before Studio starts, and the worker starts automatically. No host Node.js or media tools are required.
+
+```sh
+docker compose logs -f studio worker
+docker compose stop
+```
+
+Projects persist in the existing `cutline-db` volume. Docker exports persist in the shared `cutline-media` volume, separately from the host's `.media` directory. Both volumes survive `docker compose stop` and `docker compose down`; `docker compose down -v` deletes them. Stop any host Studio or worker before using the container stack.
+
+For hosted mode, set the provider variables below in `.env` and rerun `docker compose up -d --wait`. Compose passes provider settings into the containers; host database URLs, font paths, and executable overrides are not used inside Docker. The `.env` file is excluded from the image.
+
+## Local setup without Docker
 
 Install Node.js 22.18 or newer and Docker with Compose. FFmpeg must include `libx264` and the `drawtext` filter.
 
@@ -27,7 +46,7 @@ From the workspace, with Docker running:
 ```sh
 npm ci
 cp .env.example .env
-docker compose up -d --wait
+docker compose up -d --wait postgres
 npm run db:init
 npm run dev
 ```
@@ -75,12 +94,13 @@ From the workspace:
 ```sh
 npm run check
 npm run build
+npm run verify:timeline
 npm run verify:media
 ```
 
 The media fixture uses an original two-color visual and two audio pulses at known sample offsets. It renders a real MP4, checks FFprobe stream properties and all frame timestamps, then decodes the frames and audio to assert the visual cut, caption windows, and pulse onsets. It prints the fixture MP4 path.
 
-For the database and API integration check, run `docker compose up -d --wait`, `npm run db:init`, and `npm run dev`. Leave the regular worker stopped and run this in a second terminal:
+For the database and API integration check without Docker application containers, run `docker compose up -d --wait postgres`, `npm run db:init`, and `npm run dev`. Leave the regular worker stopped and run this in a second terminal:
 
 ```sh
 npm run verify:workflow

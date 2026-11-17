@@ -1,4 +1,49 @@
+x-runtime: &runtime
+  image: cutline-studio:local
+  build: .
+  init: true
+  environment:
+    DATABASE_URL: postgres://cutline:cutline-local@postgres:5432/cutline
+    MEDIA_ROOT: /app/.media
+    OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    OPENAI_SCRIPT_MODEL: ${OPENAI_SCRIPT_MODEL:-gpt-4.1-mini}
+    ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY:-}
+    ELEVENLABS_VOICE_ID: ${ELEVENLABS_VOICE_ID:-}
+    ELEVENLABS_MODEL_ID: ${ELEVENLABS_MODEL_ID:-eleven_multilingual_v2}
+  volumes:
+    - cutline-media:/app/.media
+
 services:
+  migrate:
+    <<: *runtime
+    command: ["npm", "run", "db:init"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  studio:
+    <<: *runtime
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+  worker:
+    <<: *runtime
+    restart: unless-stopped
+    command: ["npm", "run", "worker"]
+    depends_on:
+      studio:
+        condition: service_healthy
+
   postgres:
     image: postgres:17-alpine
     environment:
@@ -16,3 +61,4 @@ services:
       retries: 20
 volumes:
   cutline-db:
+  cutline-media:

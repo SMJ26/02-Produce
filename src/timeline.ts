@@ -62,6 +62,7 @@ export function validate(t: Timeline, samples: number, phrases: Phrase[]) {
     refs.set(phrase.id, phrase)
     cursor = phrase.endSample
   }
+  const captioned = new Set<string>()
   cursor = 0
   for (const overlay of t.overlays) {
     const phrase = refs.get(overlay.wordIds[0])
@@ -69,6 +70,9 @@ export function validate(t: Timeline, samples: number, phrases: Phrase[]) {
         overlay.start < cursor || overlay.end > t.durationFrames || overlay.start >= overlay.end ||
         overlay.start !== frame(phrase.startSample) || overlay.end !== frame(phrase.endSample) ||
         overlay.text !== phrase.text) fail('caption bounds or anchor')
+    captioned.add(overlay.wordIds[0])
     cursor = overlay.end
   }
+  if (phrases.some(phrase => frame(phrase.startSample) < frame(phrase.endSample) && !captioned.has(phrase.id)))
+    fail('missing caption coverage')
 }

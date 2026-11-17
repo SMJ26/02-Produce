@@ -11,6 +11,7 @@
     "worker": "node --env-file-if-exists=.env src/worker.ts",
     "db:init": "node --env-file-if-exists=.env scripts/migrate.ts",
     "check": "tsc --noEmit",
+    "verify:timeline": "node scripts/verify-timeline.ts",
     "verify:media": "node --env-file-if-exists=.env scripts/verify-media.ts",
     "verify:workflow": "node --env-file-if-exists=.env scripts/verify-workflow.ts"
   },
